@@ -97,7 +97,7 @@ public class ZUGFeRDValidator {
 			}
 
 			PDFValidator pdfv = new PDFValidator(context);
-			if (inputStream == null) {
+			if (inputStream == null && !contextFilename.equals("inline.xml")) {
 				context.addResultItem(
 					new ValidationResultItem(ESeverity.fatal, "File not found").setSection(1).setPart(EPart.pdf));
 			} else if (inputLength < 32) {
@@ -207,21 +207,28 @@ public class ZUGFeRDValidator {
 	/***
 	 * performs a validation on the file filename
 	 *
-	 * @param filename the complete absolute filename of a PDF or XML
+	 * @param input the complete absolute filename of a PDF or XML, or XML content as string
 	 * @return a xml string with the validation result
 	 */
-	public String validate(String filename) {
+	public String validate(String input) {
 		String contextFilename;
 		InputStream inputStream;
 		long inputLength;
-		if (filename == null) {
-			// No filename provided
+
+		if (input == null) {
+			// No input provided
 			contextFilename = "";
 			inputStream = null;
 			inputLength = 0;
+		} else if (input.trim().startsWith("<?xml")) {
+			// Input is XML string
+			byte[] xmlBytes = input.getBytes(StandardCharsets.UTF_8);
+			inputStream = new ByteArrayInputStream(xmlBytes);
+			inputLength = xmlBytes.length;
+			contextFilename = "inline.xml";
 		} else {
-			File file = new File(filename);
-			// set filename without path
+			// Input is treated as filename
+			File file = new File(input);
 			contextFilename = file.getName();
 			if (file.isFile()) {
 				try {
@@ -236,32 +243,11 @@ public class ZUGFeRDValidator {
 				inputLength = 0;
 			}
 		}
+
 		try {
 			return internalValidate(contextFilename, inputStream, inputLength);
 		} finally {
 			StreamHelper.close(inputStream);
-		}
-	}
-
-	public String validate(InputStream inputStream, String fileNameOfInputStream) {
-		long inputLength;
-		try {
-			inputLength = inputStream == null ? 0 : inputStream.available();
-		} catch (IOException ex) {
-			throw new UncheckedIOException(ex);
-		}
-		try {
-			return internalValidate(fileNameOfInputStream, inputStream, inputLength);
-		} finally {
-			StreamHelper.close(inputStream);
-		}
-	}
-
-	public String validate(byte[] bytes, String fileNameOfInputStream) {
-		try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes)) {
-			return internalValidate(fileNameOfInputStream, bais, bytes.length);
-		} catch (IOException ex) {
-			throw new UncheckedIOException(ex);
 		}
 	}
 

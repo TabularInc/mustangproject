@@ -99,6 +99,9 @@ public class Main {
 			+ "        --action pdf  convert XML to PDF \n"
 			+ "                [--source <filename>]: set input XML file\n"
 			+ "                [--out <filename>]: set output PDF file\n"
+			+ "        --action map  map XML to unified XML \n"
+			+ "                [--source <filename>]: set input XML file\n"
+			+ "                [--out <filename>]: set output XML file\n"
 			;
 	}
 
@@ -120,9 +123,11 @@ public class Main {
 	 */
 	protected static String getStringFromUser(String prompt, String defaultValue, String pattern) throws Exception {
 		String input = "";
+
 		if (!defaultValue.matches(pattern)) {
 			throw new Exception("Default value must match pattern");
 		}
+
 		boolean firstInput = true;
 		do {
 			// for a more sophisticated dialogue maybe https://github.com/mabe02/lanterna/
@@ -420,6 +425,9 @@ public class Main {
 				} else if ((action != null) && (action.equals("visualize"))) {
 					performVisualization(sourceName, lang, outName, false);
 					optionsRecognized = true;
+				} else if ((action != null) && (action.equals("map"))) {
+					performMap(sourceName, outName);
+					optionsRecognized = true;
 				} else if ((action != null) && (action.equals("upgrade"))) {
 					performUpgrade(sourceName, outName);
 					optionsRecognized = true;
@@ -456,9 +464,11 @@ public class Main {
 
 	private static boolean performValidate(String sourceName, boolean noNotices, String logAppend) {
 		boolean optionsRecognized;
+		
 		if (sourceName == null) {
 			sourceName = getFilenameFromUser("Source PDF or XML", "invoice.pdf", "pdf|xml", true, false);
 		}
+
 		ZUGFeRDValidator zfv = new ZUGFeRDValidator();
 		if ((logAppend != null) && (logAppend.length() > 0)) {
 			zfv.setLogAppend(logAppend);
@@ -790,82 +800,96 @@ public class Main {
 
 	private static void performVisualization(String sourceName, String lang, String outName, boolean intoPDF) {
 		// Get params from user if not already defined
+
 		if (sourceName == null) {
 			sourceName = getFilenameFromUser("ZUGFeRD XML source", "factur-x.xml", "xml", true, false);
-		} else {
-			System.out.println("ZUGFeRD XML source set to " + sourceName);
 		}
+
 		if (!intoPDF) {
 			if (lang == null) {
 				try {
-					lang = getStringFromUser("Output language", "en", "en|de|fr");
+					lang = getStringFromUser("Output language", "de", "en|de|fr");
 				} catch (Exception e) {
 					LOGGER.error(e.getMessage(), e);
 				}
-			} else {
-				System.out.println("Output language set to " + lang);
 			}
 		}
 
-		if (outName == null) {
-			String defaultFilename = "factur-x.html";
-			String defaultExtension = "html";
-			if (intoPDF) {
-				defaultFilename = "factur-x.pdf";
-				defaultExtension = "pdf";
-			}
-			outName = getFilenameFromUser("Target file", defaultFilename, defaultExtension, false, true);
-		} else {
-			System.out.println("Target set to " + outName);
-		}
-
-		// Verify params
+		// Verify source exists
 		try {
-			ensureFileExists(sourceName);
-			ensureFileNotExists(outName);
-
-			// stylesheets/ZUGFeRD_1p0_c1p0_s1p0.xslt
+			// Only verify output file if one was specified
+			if (outName != null) {
+				ensureFileNotExists(outName);
+			}
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
 		}
 
 		ZUGFeRDVisualizer zvi = new ZUGFeRDVisualizer();
-		String xml = null;
+
 		try {
 			if (!intoPDF) {
-				ZUGFeRDVisualizer.Language langCode = ZUGFeRDVisualizer.Language.EN;
+				ZUGFeRDVisualizer.Language langCode = ZUGFeRDVisualizer.Language.DE;
 				if (lang.equalsIgnoreCase("de")) {
 					langCode = ZUGFeRDVisualizer.Language.DE;
 				}
 				if (lang.equalsIgnoreCase("fr")) {
 					langCode = ZUGFeRDVisualizer.Language.FR;
 				}
-				xml = zvi.visualize(sourceName, langCode);
-				Files.write(Paths.get(outName), xml.getBytes());
+
+				String xml = zvi.visualize(sourceName, langCode);
+
+				// If no output file specified, print to console
+				if (outName == null) {
+					System.out.println(xml);
+				} else {
+					Files.write(Paths.get(outName), xml.getBytes());
+					System.out.println("Written to " + outName);
+				}
+
+				try {
+					ExportResource("/xrechnung-viewer.css");
+					ExportResource("/xrechnung-viewer.js");
+				} catch (Exception e) {
+					LOGGER.error(e.getMessage(), e);
+				}
+
 			} else {
+				if (outName == null) {
+					System.err.println("PDF output requires an output filename");
+					return;
+				}
 				zvi.toPDF(sourceName, outName);
+				System.out.println("Written to " + outName);
 			}
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 			System.err.println(e.getMessage());
 		}
-		System.out.println("Written to " + outName);
-
-		if (!intoPDF) {
-
-			try {
-				ExportResource("/xrechnung-viewer.css");
-				ExportResource("/xrechnung-viewer.js");
-
-				System.out.println("xrechnung-viewer.css and xrechnung-viewer.js written as well (to local working dir)");
-			} catch (Exception e) {
-				LOGGER.error(e.getMessage(), e);
-			}
-		}
-
-
 	}
 
+	private static void performMap(String xmlName, String outName) throws IOException, TransformerException {
+		// Get params from user if not already defined
+		if (xmlName == null) {
+			xmlName = getFilenameFromUser("XML source", "invoice.xml", "xml", true, false);
+		}
+
+		// Perform the mapping
+		ZUGFeRDMapper mapper = new ZUGFeRDMapper();
+		String xml;
+		try {
+			xml = mapper.map(xmlName);
+
+			System.out.println(xml);
+
+			if (outName != null) {
+					ensureFileNotExists(outName);
+					Files.write(Paths.get(outName), xml.getBytes());
+			}
+		} catch (javax.xml.parsers.ParserConfigurationException | org.xml.sax.SAXException e) {
+			throw new IOException("Error mapping XML: " + e.getMessage(), e);
+		}
+	}
 	/**
 	 * Export a resource embedded into a Jar file to the local file path.
 	 *

@@ -102,8 +102,7 @@ public class ZUGFeRDValidatorTest extends ResourceCase {
      */
     ZUGFeRDValidator zfv = new ZUGFeRDValidator();
 
-    String res = zfv.validate(new ByteArrayInputStream (fileBytes), "invalidPDF.pdf");
-
+    String res = zfv.validate("invalidPDF.pdf");
 
     assertThat(res).valueByXPath("/validation/pdf/summary/@status")
         .isEqualTo("invalid");
@@ -118,24 +117,24 @@ public class ZUGFeRDValidatorTest extends ResourceCase {
     fileBytes = getResourceAsByteArray("validAvoir_FR_type380_BASICWL.pdf");
     zfv = new ZUGFeRDValidator();
 
-    res = zfv.validate(new ByteArrayInputStream (fileBytes), "validAvoir_FR_type380_BASICWL.pdf");
+    res = zfv.validate("validAvoir_FR_type380_BASICWL.pdf");
     assertThat(res).valueByXPath("/validation/summary/@status")
         .isEqualTo("valid");
 
     fileBytes = getResourceAsByteArray("validXRechnung.pdf");
     zfv = new ZUGFeRDValidator();
-    res = zfv.validate(new ByteArrayInputStream (fileBytes), "validXRechnung.pdf");
+    res = zfv.validate("validXRechnung.pdf");
     assertThat(res).valueByXPath("/validation/summary/@status")
         .isEqualTo("valid");
 
     fileBytes = getResourceAsByteArray("invalidXRechnung.pdf");
     zfv = new ZUGFeRDValidator();
-    res = zfv.validate(new ByteArrayInputStream (fileBytes), "invalidXRechnung.pdf");
+    res = zfv.validate("invalidXRechnung.pdf");
     assertThat(res).valueByXPath("/validation/summary/@status")
         .isEqualTo("invalid");
 
     zfv = new ZUGFeRDValidator();
-    res = zfv.validate(new ByteArrayInputStream (new byte[0]), "/does/not/exist");
+    res = zfv.validate("/does/not/exist");
     assertThat(res).valueByXPath("/validation/summary/@status")
         .isEqualTo("invalid");
 

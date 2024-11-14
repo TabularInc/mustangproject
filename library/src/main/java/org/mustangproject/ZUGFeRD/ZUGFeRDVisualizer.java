@@ -110,11 +110,11 @@ public class ZUGFeRDVisualizer {
 
 	/***
 	 * returns which standard is used, CII or UBL
+	 *
 	 * @param fis inputstream (will be consumed)
 	 * @return (facturx = cii)
 	 */
 	public EStandard findOutStandardFromRootNode(InputStream fis) {
-
 		String zf1Signature = "CrossIndustryDocument";
 		String zf2Signature = "CrossIndustryInvoice";
 		String ublSignature = "Invoice";
@@ -127,6 +127,7 @@ public class ZUGFeRDVisualizer {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			Document doc = db.parse(new InputSource(fis));
 			Element root = doc.getDocumentElement();
+
 			if (root.getLocalName().equals(zf1Signature)) {
 				return EStandard.zugferd;
 			} else if (root.getLocalName().equals(zf2Signature)) {
@@ -139,26 +140,61 @@ public class ZUGFeRDVisualizer {
 				return EStandard.orderx;
 			}
 		} catch (Exception e) {
-			LOGGER.error("Failed to recognize standard", e);
+			// Improve error logging
+			LOGGER.error("Failed to recognize standard. Input stream content:", e);
+			try {
+					// Only attempt to print stream content if it supports mark/reset
+					if (fis.markSupported()) {
+							fis.mark(4096);
+							byte[] bytes = new byte[4096];
+							int bytesRead = fis.read(bytes);
+							LOGGER.error("First " + bytesRead + " bytes: " + new String(bytes, 0, bytesRead, StandardCharsets.UTF_8));
+							fis.reset();
+					}
+			} catch (IOException ioe) {
+				LOGGER.error("Failed to read input stream content", ioe);
+			}
 		}
 		return null;
 	}
 
-	public String visualize(String xmlFilename, Language lang)
-		throws FileNotFoundException, TransformerException, IOException, SAXException, ParserConfigurationException {
+	public String visualize(String input, Language lang)
+			throws FileNotFoundException, TransformerException, IOException, SAXException, ParserConfigurationException {
+		InputStream fis;
+		EStandard thestandard = null;
+
+		if (input.trim().startsWith("<")) {
+			// Create a byte array that can be reset
+			byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
+			fis = new ByteArrayInputStream(inputBytes);
+			thestandard = findOutStandardFromRootNode(new ByteArrayInputStream(inputBytes)); // Use a new stream for detection
+		} else {
+			if (!Files.exists(Paths.get(input))) {
+				throw new FileNotFoundException("File not found: " + input);
+			}
+			fis = new FileInputStream(input);
+			thestandard = findOutStandardFromRootNode(new FileInputStream(input)); // Use a new stream for detection
+		}
+
+		return visualizeInputStream(fis, thestandard, lang);
+	}
+
+	public String visualizeInputStream(InputStream fis, EStandard thestandard, Language lang)
+			throws FileNotFoundException, TransformerException, IOException, SAXException, ParserConfigurationException {
 
 		try {
 			if (mXsltPDFTemplate == null) {
 				mXsltPDFTemplate = mFactory.newTemplates(
-					new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/xr-pdf.xsl")));
+						new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/xr-pdf.xsl")));
 			}
 			if (mXsltHTMLTemplate == null) {
 				mXsltHTMLTemplate = mFactory.newTemplates(new StreamSource(
-					CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/xrechnung-html." + lang.name().toLowerCase() + ".xsl")));
+						CLASS_LOADER.getResourceAsStream(
+								RESOURCE_PATH + "stylesheets/xrechnung-html." + lang.name().toLowerCase() + ".xsl")));
 			}
 			if (mXsltZF1HTMLTemplate == null) {
 				mXsltZF1HTMLTemplate = mFactory.newTemplates(new StreamSource(
-					CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/ZUGFeRD_1p0_c1p0_s1p0.xslt")));
+						CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/ZUGFeRD_1p0_c1p0_s1p0.xslt")));
 			}
 		} catch (TransformerConfigurationException ex) {
 			LOGGER.error("Failed to init XSLT templates", ex);
@@ -170,40 +206,28 @@ public class ZUGFeRDVisualizer {
 		 * http://www.ferd-net.de/upload/Dokumente/FACTUR-X_ZUGFeRD_2p0_Teil1_Profil_EN16931_1p03.pdf
 		 * http://countwordsfree.com/xmlviewer
 		 */
-		FileInputStream fis = new FileInputStream(xmlFilename);
-		String fileContent = "";
-		try {
-			fileContent = new String(Files.readAllBytes(Paths.get(xmlFilename)), StandardCharsets.UTF_8);
-		} catch (IOException e2) {
-			LOGGER.error("Failed to read file content", e2);
-		}
 
 		ByteArrayOutputStream iaos = new ByteArrayOutputStream();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 		boolean doPostProcessing = false;
 
-
-		fis = new FileInputStream(xmlFilename); // fis wont reset() so re-read from beginning
-		EStandard thestandard = findOutStandardFromRootNode(fis);
-		fis = new FileInputStream(xmlFilename); // fis wont reset() so re-read from beginning
-
 		if (thestandard == EStandard.zugferd) {
 			applyZF1XSLT(fis, baos);
 		} else if (thestandard == EStandard.facturx) {
-			//zf2 or fx
+			// zf2 or fx
 			applyZF2XSLT(fis, iaos);
 			doPostProcessing = true;
 		} else if (thestandard == EStandard.ubl) {
-			//zf2 or fx
+			// zf2 or fx
 			applyUBL2XSLT(fis, iaos);
 			doPostProcessing = true;
 		} else if (thestandard == EStandard.ubl_creditnote) {
-			//zf2 or fx
+			// zf2 or fx
 			applyUBLCreditNote2XSLT(fis, iaos);
 			doPostProcessing = true;
 		} else if (thestandard == EStandard.orderx) {
-			//zf2 or fx
+			// zf2 or fx
 			applyCIO2XSLT(fis, iaos);
 			doPostProcessing = true;
 		} else {
@@ -243,16 +267,16 @@ public class ZUGFeRDVisualizer {
 	}
 
 	protected String toFOP(String xmlFilename)
-		throws FileNotFoundException, TransformerException {
+			throws FileNotFoundException, TransformerException {
 
 		FileInputStream fis = new FileInputStream(xmlFilename);
 		EStandard theStandard = findOutStandardFromRootNode(fis);
-		fis = new FileInputStream(xmlFilename);//rewind :-(
+		fis = new FileInputStream(xmlFilename);// rewind :-(
 
 		try {
 			if (mXsltPDFTemplate == null) {
 				mXsltPDFTemplate = mFactory.newTemplates(
-					new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/xr-pdf.xsl")));
+						new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/xr-pdf.xsl")));
 			}
 		} catch (TransformerConfigurationException ex) {
 			LOGGER.error("Failed to init XSLT templates", ex);
@@ -261,7 +285,7 @@ public class ZUGFeRDVisualizer {
 		ByteArrayOutputStream iaos = new ByteArrayOutputStream();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-		//zf2 or fx
+		// zf2 or fx
 		if (theStandard == EStandard.facturx) {
 			applyZF2XSLT(fis, iaos);
 		} else if (theStandard == EStandard.ubl) {
@@ -269,7 +293,6 @@ public class ZUGFeRDVisualizer {
 		} else if (theStandard == EStandard.ubl_creditnote) {
 			applyUBLCreditNote2XSLT(fis, iaos);
 		}
-
 
 		PipedInputStream in = new PipedInputStream();
 		PipedOutputStream out;
@@ -297,7 +320,6 @@ public class ZUGFeRDVisualizer {
 			LOGGER.error("Failed to create PDF", e1);
 		}
 
-
 		return baos.toString(StandardCharsets.UTF_8);
 	}
 
@@ -308,9 +330,10 @@ public class ZUGFeRDVisualizer {
 
 		String result = null;
 
-			/* remove file endings so that tests can also pass after checking
-			   out from git with arbitrary options (which may include CSRF changes)
-			 */
+		/*
+		 * remove file endings so that tests can also pass after checking
+		 * out from git with arbitrary options (which may include CSRF changes)
+		 */
 		try {
 			result = this.toFOP(XMLinputFile.getAbsolutePath());
 		} catch (FileNotFoundException | TransformerException e) {
@@ -325,23 +348,27 @@ public class ZUGFeRDVisualizer {
 			throw new RuntimeException(e);
 		}
 
-		FopFactoryBuilder builder = new FopFactoryBuilder(new File(".").toURI(), new ClasspathResolverURIAdapter()).setConfiguration(cfg);
-// Step 1: Construct a FopFactory by specifying a reference to the configuration file
-// (reuse if you plan to render multiple documents!)
+		FopFactoryBuilder builder = new FopFactoryBuilder(new File(".").toURI(), new ClasspathResolverURIAdapter())
+				.setConfiguration(cfg);
+		// Step 1: Construct a FopFactory by specifying a reference to the configuration
+		// file
+		// (reuse if you plan to render multiple documents!)
 
-		FopFactory fopFactory = builder.build();//FopFactory.newInstance(new File("c:\\Users\\jstaerk\\temp\\fop-config.xconf"));
+		FopFactory fopFactory = builder.build();// FopFactory.newInstance(new
+																						// File("c:\\Users\\jstaerk\\temp\\fop-config.xconf"));
 
 		fopFactory.getFontManager().setResourceResolver(
-			ResourceResolverFactory.createInternalResourceResolver(
-				new File(".").toURI(),
-				new ClasspathResolverURIAdapter()));
+				ResourceResolverFactory.createInternalResourceResolver(
+						new File(".").toURI(),
+						new ClasspathResolverURIAdapter()));
 
 		FOUserAgent userAgent = fopFactory.newFOUserAgent();
 
 		userAgent.getRendererOptions().put("pdf-a-mode", "PDF/A-3b");
 
-// Step 2: Set up output stream.
-// Note: Using BufferedOutputStream for performance reasons (helpful with FileOutputStreams).
+		// Step 2: Set up output stream.
+		// Note: Using BufferedOutputStream for performance reasons (helpful with
+		// FileOutputStreams).
 
 		try (OutputStream out = new BufferedOutputStream(new FileOutputStream(pdfFilename))) {
 
@@ -368,10 +395,10 @@ public class ZUGFeRDVisualizer {
 	}
 
 	protected void applyZF2XSLT(final InputStream xmlFile, final OutputStream HTMLOutstream)
-		throws TransformerException {
+			throws TransformerException {
 		if (mXsltXRTemplate == null) {
 			mXsltXRTemplate = mFactory.newTemplates(
-				new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/cii-xr.xsl")));
+					new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/cii-xr.xsl")));
 
 		}
 		Transformer transformer = mXsltXRTemplate.newTransformer();
@@ -380,10 +407,10 @@ public class ZUGFeRDVisualizer {
 	}
 
 	protected void applyCIO2XSLT(final InputStream xmlFile, final OutputStream HTMLOutstream)
-		throws TransformerException {
+			throws TransformerException {
 		if (mXsltCIOTemplate == null) {
 			mXsltCIOTemplate = mFactory.newTemplates(
-				new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/cio-xr.xsl")));
+					new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/cio-xr.xsl")));
 		}
 		Transformer transformer = mXsltCIOTemplate.newTransformer();
 
@@ -391,10 +418,10 @@ public class ZUGFeRDVisualizer {
 	}
 
 	protected void applyUBL2XSLT(final InputStream xmlFile, final OutputStream HTMLOutstream)
-		throws TransformerException {
+			throws TransformerException {
 		if (mXsltUBLTemplate == null) {
 			mXsltUBLTemplate = mFactory.newTemplates(
-				new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/ubl-invoice-xr.xsl")));
+					new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/ubl-invoice-xr.xsl")));
 		}
 		Transformer transformer = mXsltUBLTemplate.newTransformer();
 
@@ -402,10 +429,10 @@ public class ZUGFeRDVisualizer {
 	}
 
 	protected void applyUBLCreditNote2XSLT(final InputStream xmlFile, final OutputStream HTMLOutstream)
-		throws TransformerException {
+			throws TransformerException {
 		if (mXsltUBLTemplate == null) {
 			mXsltUBLTemplate = mFactory.newTemplates(
-				new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/ubl-creditnote-xr.xsl")));
+					new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/ubl-creditnote-xr.xsl")));
 		}
 		Transformer transformer = mXsltUBLTemplate.newTransformer();
 
@@ -413,21 +440,21 @@ public class ZUGFeRDVisualizer {
 	}
 
 	protected void applyZF1XSLT(final InputStream xmlFile, final OutputStream HTMLOutstream)
-		throws TransformerException {
+			throws TransformerException {
 		Transformer transformer = mXsltZF1HTMLTemplate.newTransformer();
 
 		transformer.transform(new StreamSource(xmlFile), new StreamResult(HTMLOutstream));
 	}
 
 	protected void applyXSLTToHTML(final InputStream xmlFile, final OutputStream HTMLOutstream)
-		throws TransformerException {
+			throws TransformerException {
 		Transformer transformer = mXsltHTMLTemplate.newTransformer();
 
 		transformer.transform(new StreamSource(xmlFile), new StreamResult(HTMLOutstream));
 	}
 
 	protected void applyXSLTToPDF(final InputStream xmlFile, final OutputStream PDFOutstream)
-		throws TransformerException {
+			throws TransformerException {
 		Transformer transformer = mXsltPDFTemplate.newTransformer();
 
 		transformer.transform(new StreamSource(xmlFile), new StreamResult(PDFOutstream));
