@@ -166,6 +166,7 @@ public class ZUGFeRDMapper {
 
     // Convert intermediate output to input stream for second transformation
     ByteArrayInputStream intermediateInput = new ByteArrayInputStream(intermediateOutput.toByteArray());
+    System.out.println(intermediateOutput.toString(StandardCharsets.UTF_8));
 
     // Second transformation: Apply ZF2 transformation
     if (mXsltXRTemplate == null) {
