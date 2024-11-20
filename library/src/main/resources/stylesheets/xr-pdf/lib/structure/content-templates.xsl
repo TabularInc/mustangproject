@@ -31,7 +31,7 @@
       <xsl:call-template name="h1">
         <xsl:with-param name="titel" select="$heading/label"/>
       </xsl:call-template>
-      
+
       <xsl:copy-of select="$content"/>
 
     </xsl:if>
@@ -52,44 +52,44 @@
           <xsl:with-param name="identifier" select="$identifier"/>
         </xsl:call-template>
       </xsl:variable>
-  
+
       <xsl:call-template name="h2">
         <xsl:with-param name="titel" select="$heading/label"/>
       </xsl:call-template>
-  
+
       <!-- FIXME: keep-together.within-page="always" has been lost during refactor -->
       <xsl:for-each select="$content/*">
         <xsl:copy-of select="."/>
-      </xsl:for-each>    
-      <fo:block xsl:use-attribute-sets="box-container-bereich"/>    
+      </xsl:for-each>
+      <fo:block xsl:use-attribute-sets="box-container-bereich"/>
     </xsl:if>
   </xsl:template>
 
   <xsl:template name="spanned-box">
     <xsl:param name="identifier"/>
     <xsl:param name="content"/>
-    
+
     <xsl:if test="normalize-space($content)">
-      
+
       <xsl:variable name="heading">
         <xsl:call-template name="field-mapping">
           <xsl:with-param name="identifier" select="$identifier"/>
         </xsl:call-template>
       </xsl:variable>
-      
+
       <fo:block xsl:use-attribute-sets="box-container-bereich" span="all">
         <xsl:call-template name="h2">
           <xsl:with-param name="titel" select="$heading/label"/>
         </xsl:call-template>
-                
+
         <xsl:for-each select="$content/*">
           <xsl:copy-of select="."/>
         </xsl:for-each>
       </fo:block>
-      
+
     </xsl:if>
   </xsl:template>
-  
+
 
   <!-- ==========================================================================
        == Inhalt eines Teilbereich eines Abschnittes
@@ -98,7 +98,7 @@
     <xsl:param name="layout">zweispaltig</xsl:param>
     <xsl:param name="headingId"/>
     <xsl:param name="content"/>
-    
+
     <xsl:if test="normalize-space($content)">
       <xsl:if test="$headingId">
         <xsl:variable name="heading">
@@ -113,7 +113,7 @@
       <fo:block>
         <xsl:copy-of select="$content"/>
       </fo:block>
-    </xsl:if>    
+    </xsl:if>
   </xsl:template>
 
 
@@ -155,13 +155,13 @@
     <xsl:param name="layout">zweispaltig</xsl:param>
     <xsl:param name="content"/>
 
-    <xsl:if test="normalize-space($content)">      
+    <xsl:if test="normalize-space($content)">
       <xsl:call-template name="list">
         <xsl:with-param name="layout" select="$layout"/>
         <xsl:with-param name="content" select="$content"/>
       </xsl:call-template>
       <!-- Placeholder for spacing after the box -->
-      <fo:block xsl:use-attribute-sets="box-container-inner"  line-height="0pt" span="all"/>        
+      <fo:block xsl:use-attribute-sets="box-container-inner"  line-height="0pt" span="all"/>
     </xsl:if>
   </xsl:template>
 
@@ -194,7 +194,9 @@
                  </xsl:when>
                  <xsl:otherwise>
                    <xsl:choose>
-                     <xsl:when test="$field-mapping-identifier = 'xr:Payment_due_date'"><xsl:value-of select="format-date(xs:date(.), xrf:_('date-format'))"/></xsl:when>
+                     <xsl:when test="$field-mapping-identifier = 'xr:Payment_due_date'">
+                       <xsl:value-of select="."/>
+                     </xsl:when>
                      <xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>
                    </xsl:choose>
                  </xsl:otherwise>
@@ -205,7 +207,7 @@
       </fo:list-block>
     </xsl:if>
   </xsl:template>
-  
+
   <xsl:template name="list-entry-bt-7">
     <xsl:param name="value"/>
     <xsl:param name="field-mapping-identifier">
@@ -288,7 +290,7 @@
 
 
   <xsl:template match="*|@*" mode="value-list-entry">
-    <xsl:param name="value"/>    
+    <xsl:param name="value"/>
     <xsl:param name="field-mapping-identifier">
       <xsl:value-of select="name()"/>
     </xsl:param>
@@ -307,10 +309,10 @@
               <xsl:when test="$value">
                 <xsl:value-of select="$value"/>
               </xsl:when>
-              <xsl:otherwise>                
+              <xsl:otherwise>
                 <xsl:value-of select="."/>
               </xsl:otherwise>
-            </xsl:choose>           
+            </xsl:choose>
           </fo:block>
         </fo:table-cell>
       </fo:table-row>
@@ -323,7 +325,7 @@
     <xsl:param name="field-mapping-identifier">
       <xsl:value-of select="name()"/>
     </xsl:param>
-    
+
     <xsl:if test="normalize-space(.)">
       <xsl:variable name="field-mapping">
         <xsl:call-template name="field-mapping">
@@ -378,7 +380,7 @@
   </xsl:template>
 
   <xsl:template match="*|@*" mode="binary">
-    <xsl:param name="identifier"/>    
+    <xsl:param name="identifier"/>
     <fo:basic-link>
       <xsl:attribute name="external-destination">url(embedded-file:<xsl:value-of select="encode-for-uri($identifier)"/>)</xsl:attribute>
       <xsl:value-of select="$identifier"/>
@@ -386,11 +388,11 @@
   </xsl:template>
 
   <xsl:template match="*|@*" mode="binary-declaration">
-    <xsl:param name="identifier"/>   
+    <xsl:param name="identifier"/>
       <pdf:embedded-file>
         <xsl:attribute name="filename"><xsl:value-of select="$identifier"/></xsl:attribute>
         <xsl:attribute name="src">data:application/pdf;base64,<xsl:value-of select="normalize-space(.)"/></xsl:attribute>
-      </pdf:embedded-file> 
+      </pdf:embedded-file>
   </xsl:template>
 
   <!-- ==========================================================================
@@ -401,16 +403,16 @@
     <xsl:variable name="identifier">
       <xsl:choose>
         <xsl:when test="$invoiceline-numbering = 'normal'">
-          <xsl:value-of select="xr:Invoice_line_identifier"/>    
+          <xsl:value-of select="xr:Invoice_line_identifier"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:number format="{$invoiceline-numbering}" 
-            level="multiple" 
+          <xsl:number format="{$invoiceline-numbering}"
+            level="multiple"
             count="xr:INVOICE_LINE | xr:SUB_INVOICE_LINE"/>
         </xsl:otherwise>
-      </xsl:choose>      
+      </xsl:choose>
     </xsl:variable>
-  
+
     <xsl:call-template name="h2">
       <xsl:with-param name="titel" select="$identifier"/>
     </xsl:call-template>
@@ -423,37 +425,37 @@
       <xsl:copy-of select="."/>
     </xsl:for-each>
     <xsl:apply-templates select="xr:SUB_INVOICE_LINE"/>
-    
-    <fo:block xsl:use-attribute-sets="box-container-bereich"/>      
+
+    <fo:block xsl:use-attribute-sets="box-container-bereich"/>
   </xsl:template>
-  
+
   <xsl:template match="xr:SUB_INVOICE_LINE">
     <xsl:variable name="identifier">
       <xsl:choose>
         <xsl:when test="$invoiceline-numbering = 'normal'">
-          <xsl:value-of select="xr:Invoice_line_identifier"/>    
+          <xsl:value-of select="xr:Invoice_line_identifier"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:number format="{$invoiceline-numbering}" 
-            level="multiple" 
+          <xsl:number format="{$invoiceline-numbering}"
+            level="multiple"
             count="xr:INVOICE_LINE | xr:SUB_INVOICE_LINE"/>
         </xsl:otherwise>
-      </xsl:choose>      
+      </xsl:choose>
     </xsl:variable>
-    
+
     <xsl:call-template name="h2">
       <xsl:with-param name="titel" select="$identifier"/>
     </xsl:call-template>
-    
+
     <xsl:variable name="content">
       <xsl:call-template name="detailsPosition"/>
     </xsl:variable>
-    
+
     <xsl:for-each select="$content/*">
       <xsl:copy-of select="."/>
     </xsl:for-each>
     <xsl:apply-templates select="xr:SUB_INVOICE_LINE"/>
-    <fo:block xsl:use-attribute-sets="box-container-bereich"/>      
+    <fo:block xsl:use-attribute-sets="box-container-bereich"/>
   </xsl:template>
 
 
@@ -548,7 +550,7 @@
   <!-- ==========================================================================
        == Invoice lines in tabular presentation
        =========================================================================== -->
-  
+
   <xsl:template match="xr:INVOICE_LINE | xr:SUB_INVOICE_LINE" mode="invoiceline-tabular">
     <!-- Process basic information -->
     <fo:table-row xsl:use-attribute-sets="invoicelines-table-row">
@@ -556,17 +558,17 @@
         <fo:block>
           <xsl:choose>
             <xsl:when test="$invoiceline-numbering = 'normal'">
-              <xsl:value-of select="xr:Invoice_line_identifier"/>    
+              <xsl:value-of select="xr:Invoice_line_identifier"/>
             </xsl:when>
             <xsl:otherwise>
-              <xsl:number format="{$invoiceline-numbering}" 
-                          level="multiple" 
+              <xsl:number format="{$invoiceline-numbering}"
+                          level="multiple"
                           count="xr:INVOICE_LINE | xr:SUB_INVOICE_LINE"/>
             </xsl:otherwise>
           </xsl:choose>
         </fo:block>
       </fo:table-cell>
-      <fo:table-cell padding-left="{count(ancestor-or-self::xr:SUB_INVOICE_LINE)}em">        
+      <fo:table-cell padding-left="{count(ancestor-or-self::xr:SUB_INVOICE_LINE)}em">
         <fo:block><xsl:value-of select="xr:ITEM_INFORMATION/xr:Item_name"/></fo:block>
       </fo:table-cell>
       <fo:table-cell text-align="center">
@@ -594,7 +596,7 @@
       </fo:table-cell>
       <fo:table-cell text-align="right">
         <fo:block><xsl:value-of select="format-number(xr:Invoice_line_net_amount, $amount-picture, $lang)"/></fo:block>
-      </fo:table-cell>      
+      </fo:table-cell>
     </fo:table-row>
 
     <xsl:if test="xr:ITEM_INFORMATION/xr:Item_description | xr:Invoice_line_note">
@@ -602,7 +604,7 @@
         <fo:table-cell>
           <fo:block/>
         </fo:table-cell>
-        <fo:table-cell padding-left="{count(ancestor-or-self::xr:SUB_INVOICE_LINE)}em" number-columns-spanned="6">        
+        <fo:table-cell padding-left="{count(ancestor-or-self::xr:SUB_INVOICE_LINE)}em" number-columns-spanned="6">
           <xsl:for-each select="xr:ITEM_INFORMATION/xr:Item_description | xr:Invoice_line_note">
             <fo:block>
               <xsl:value-of select="."/>
@@ -611,10 +613,10 @@
         </fo:table-cell>
         <fo:table-cell>
           <fo:block/>
-        </fo:table-cell>      
+        </fo:table-cell>
       </fo:table-row>
     </xsl:if>
-    
+
     <xsl:if test="xr:Referenced_purchase_order_line_reference | xr:Invoice_line_Buyer_accounting_reference">
       <xsl:call-template name="invoiceline-tabular-2-col-info">
         <xsl:with-param name="col1">
@@ -650,7 +652,7 @@
         </xsl:with-param>
       </xsl:call-template>
     </xsl:if>
-    
+
     <xsl:if test="xr:INVOICE_LINE_PERIOD">
       <xsl:call-template name="invoiceline-tabular-2-col-info">
         <xsl:with-param name="col1">
@@ -769,7 +771,7 @@
           <xsl:value-of select="xr:Item_attribute_value"/>
         </xsl:with-param>
       </xsl:call-template>
-    </xsl:for-each>      
+    </xsl:for-each>
 
     <xsl:if test="xr:INVOICE_LINE_ALLOWANCES">
       <fo:table-row xsl:use-attribute-sets="invoicelines-table-row">
@@ -849,7 +851,7 @@
         </fo:table-cell>
         <fo:table-cell>
           <fo:block/>
-        </fo:table-cell>      
+        </fo:table-cell>
       </fo:table-row>
     </xsl:if>
 
@@ -931,7 +933,7 @@
         </fo:table-cell>
         <fo:table-cell>
           <fo:block/>
-        </fo:table-cell>      
+        </fo:table-cell>
       </fo:table-row>
     </xsl:if>
 
@@ -957,16 +959,16 @@
             <fo:list-item-body start-indent="body-start()">
               <fo:block>
                 <xsl:copy-of select="$col2"/>
-              </fo:block>                
+              </fo:block>
             </fo:list-item-body>
           </fo:list-item>
         </fo:list-block>
       </fo:table-cell>
       <fo:table-cell>
         <fo:block/>
-      </fo:table-cell>      
+      </fo:table-cell>
     </fo:table-row>
-    
+
   </xsl:template>
 
 </xsl:stylesheet>

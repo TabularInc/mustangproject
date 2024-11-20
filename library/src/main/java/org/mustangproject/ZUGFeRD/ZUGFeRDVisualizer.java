@@ -285,8 +285,9 @@ public class ZUGFeRDVisualizer {
 		ByteArrayOutputStream iaos = new ByteArrayOutputStream();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-		// zf2 or fx
-		if (theStandard == EStandard.facturx) {
+		if (theStandard == EStandard.zugferd) {
+			applyZF1XSLT(fis, iaos);
+		} else if (theStandard == EStandard.facturx) {
 			applyZF2XSLT(fis, iaos);
 		} else if (theStandard == EStandard.ubl) {
 			applyUBL2XSLT(fis, iaos);
@@ -324,7 +325,6 @@ public class ZUGFeRDVisualizer {
 	}
 
 	public void toPDF(String xmlFilename, String pdfFilename) {
-
 		// the writing part
 		File XMLinputFile = new File(xmlFilename);
 
@@ -440,10 +440,26 @@ public class ZUGFeRDVisualizer {
 	}
 
 	protected void applyZF1XSLT(final InputStream xmlFile, final OutputStream HTMLOutstream)
-			throws TransformerException {
-		Transformer transformer = mXsltZF1HTMLTemplate.newTransformer();
+    throws TransformerException {
+    // Create temporary output stream for intermediate transformation
+    ByteArrayOutputStream intermediateOutput = new ByteArrayOutputStream();
 
-		transformer.transform(new StreamSource(xmlFile), new StreamResult(HTMLOutstream));
+    // First transformation: ZF1 to ZF2
+    Templates zf1ToZf2Template = mFactory.newTemplates(
+        new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/ZF1ToZF2.xsl")));
+    Transformer zf1ToZf2Transformer = zf1ToZf2Template.newTransformer();
+    zf1ToZf2Transformer.transform(new StreamSource(xmlFile), new StreamResult(intermediateOutput));
+
+    // Convert intermediate output to input stream for second transformation
+    ByteArrayInputStream intermediateInput = new ByteArrayInputStream(intermediateOutput.toByteArray());
+
+    // Second transformation: Apply ZF2 transformation
+    if (mXsltXRTemplate == null) {
+        mXsltXRTemplate = mFactory.newTemplates(
+            new StreamSource(CLASS_LOADER.getResourceAsStream(RESOURCE_PATH + "stylesheets/cii-xr.xsl")));
+    }
+    Transformer zf2Transformer = mXsltXRTemplate.newTransformer();
+    zf2Transformer.transform(new StreamSource(intermediateInput), new StreamResult(HTMLOutstream));
 	}
 
 	protected void applyXSLTToHTML(final InputStream xmlFile, final OutputStream HTMLOutstream)
