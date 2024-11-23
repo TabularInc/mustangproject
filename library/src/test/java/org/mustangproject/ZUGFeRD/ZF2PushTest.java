@@ -83,26 +83,33 @@ public class ZF2PushTest extends TestCase {
 			ze.ignorePDFAErrors();
 			ze.load(SOURCE_PDF);
 			ze.setProducer("My Application").setCreator(System.getProperty("user.name")).setZUGFeRDVersion(2);
-			ze.setTransaction(new Invoice().setDueDate(sdf.parse("2020-12-12")).setIssueDate(sdf.parse("2020-11-21"))
-					.setDeliveryDate(sdf.parse("2020-11-10"))
-					.setSender(new TradeParty(orgname, "Ecke 12", "12345", "Stadthausen", "DE")
-							.addBankDetails(new BankDetails("DE88200800000970375700", "COBADEFFXXX").setAccountName("Max Mustermann"))
-							.addVATID("DE136695976"))
-					.setRecipient(new TradeParty("Theodor Est", "Bahnstr. 42", "88802", "Spielkreis", "DE")
-							.setContact(new Contact("Ingmar N. Fo", "(555) 23 78-23", "info@localhost.local")).setID("2"))
-					.setNumber(number)
-					.setReferenceNumber("AB321")
-					.addItem(new Item(new Product("Design (hours)", "Of a sample invoice", "HUR", new BigDecimal(7)), price,
-							new BigDecimal(1.0)))
-					.addItem(new Item(new Product("Ballons", "various colors, ~2000ml", "H87", new BigDecimal(19)),
-							new BigDecimal("0.79"), new BigDecimal(400.0)))
-					.addItem(new Item(new Product("Hot air „heiße Luft“ (litres)", "", "LTR", new BigDecimal(19)),
-							new BigDecimal("0.025"), new BigDecimal(800.0))));
+			ze.setTransaction(new Invoice().setDueDate(sdf.parse("2020-12-12")).setIssueDate(sdf.parse("2020-11-21")).setDeliveryDate(sdf.parse("2020-11-10"))
+				.setSender(new TradeParty(orgname, "Ecke 12", "12345", "Stadthausen", "DE").addBankDetails(new BankDetails("DE88200800000970375700", "COBADEFFXXX").setAccountName("Max Mustermann")).addVATID("DE136695976"))
+				.setRecipient(new TradeParty("Theodor Est", "Bahnstr. 42", "88802", "Spielkreis", "DE")
+					.setContact(new Contact("Ingmar N. Fo", "(555) 23 78-23", "info@localhost.local")).setID("2"))
+				.setNumber(number)
+				.setReferenceNumber("AB321")
+				.addItem(new Item(new Product("Design (hours)", "Of a sample invoice", "HUR", new BigDecimal(7)), price, new BigDecimal(1.0)))
+				.addItem(new Item(new Product("Ballons", "various colors, ~2000ml", "H87", new BigDecimal(19)), new BigDecimal("0.79"), new BigDecimal(400.0)))
+				.addItem(new Item(new Product("Hot air „heiße Luft“ (litres)", "", "LTR", new BigDecimal(19)), new BigDecimal("0.025"), new BigDecimal(800.0)))
+				.setRoundingAmount(new BigDecimal("1"))
+			);
 
 			ze.export(TARGET_PDF);
 		} catch (IOException | ParseException e) {
 			fail("Exception should not be raised");
 		}
+
+ZUGFeRDInvoiceImporter zii=new ZUGFeRDInvoiceImporter(TARGET_PDF);
+		Invoice i=new Invoice();
+		try {
+			zii.extractInto(i);
+		} catch (XPathExpressionException e) {
+			throw new RuntimeException(e);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+
 
 		// now check the contents (like MustangReaderTest)
 		ZUGFeRDImporter zi = new ZUGFeRDImporter(TARGET_PDF);

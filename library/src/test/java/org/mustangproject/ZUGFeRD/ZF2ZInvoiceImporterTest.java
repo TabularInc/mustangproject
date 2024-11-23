@@ -1,4 +1,3 @@
-
 /**
  * *********************************************************************
  * <p>
@@ -23,13 +22,17 @@ package org.mustangproject.ZUGFeRD;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
 import org.mustangproject.*;
 import org.mustangproject.ZUGFeRD.IZUGFeRDTradeSettlementPayment;
 import org.mustangproject.ZUGFeRD.TransactionCalculator;
 import org.mustangproject.ZUGFeRD.ZUGFeRDInvoiceImporter;
 
 import javax.xml.xpath.XPathExpressionException;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -38,6 +41,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /***
  * Classname ZF2ZInvoiceImporterTest is alphabetical behind the tests which will
@@ -298,8 +304,7 @@ public class ZF2ZInvoiceImporterTest extends ResourceCase {
 	}
 
 	/**
-	 * testing if other files embedded in pdf additionally to the invoice can be
-	 * read correctly
+	 * testing if other files embedded in pdf additionally to the invoice can be read correctly
 	 */
 	public void testDetach() {
 		boolean hasExceptions = false;
@@ -334,7 +339,7 @@ public class ZF2ZInvoiceImporterTest extends ResourceCase {
 
 			String jsonArray = mapper.writeValueAsString(i);
 
-			// assertEquals("",jsonArray);
+			//		assertEquals("",jsonArray);
 
 		} catch (IOException e) {
 			fail("IOException not expected");
@@ -346,7 +351,7 @@ public class ZF2ZInvoiceImporterTest extends ResourceCase {
 
 	}
 
-	public void testImportMinimum() {
+  public void testImportMinimum() {
 		File CIIinputFile = getResourceAsFile("cii/facturFrMinimum.xml");
 		try {
 			ZUGFeRDInvoiceImporter zii = new ZUGFeRDInvoiceImporter(new FileInputStream(CIIinputFile));
@@ -364,56 +369,24 @@ public class ZF2ZInvoiceImporterTest extends ResourceCase {
 		}
 
 	}
-	/*
-	 * this would test if for all elements/attributes
-	 */
 
-	public void testEEISI_300_cii_Import() throws XPathExpressionException, ParseException {
-		boolean hasExceptions = false;
-		File inputCII = getResourceAsFile("not_validating_full_invoice_based_onTest_EeISI_300_CENfullmodel.cii.xml");
-		File inputUBL = getResourceAsFile("not_validating_full_invoice_based_onTest_EeISI_300_CENfullmodel.ubl.xml");
-
-		ZUGFeRDInvoiceImporter zii = new ZUGFeRDInvoiceImporter();
-		try {
-			zii.fromXML(new String(Files.readAllBytes(inputCII.toPath()), StandardCharsets.UTF_8));
-
-		} catch (IOException e) {
-			hasExceptions = true;
-		}
-
-		Invoice invoiceUBL = null;
-		invoiceUBL = zii.extractInvoice();
-
-		try {
-			zii.fromXML(new String(Files.readAllBytes(inputUBL.toPath()), StandardCharsets.UTF_8));
-
-		} catch (IOException e) {
-			hasExceptions = true;
-		}
-
-		Invoice invoiceCII = null;
-		try {
-			invoiceCII = zii.extractInvoice();
-			ObjectMapper mapper = new ObjectMapper();
-			String ubl = mapper.writeValueAsString(invoiceUBL).replace(",", "\n");
-			String cii = mapper.writeValueAsString(invoiceCII).replace(",", "\n");
-
-			assertEquals(cii, ubl);
-
-			/*
-			 * <cbc:Name>Seller contact point</cbc:Name>
-			 * <cbc:Telephone>+41 345 654455</cbc:Telephone>
-			 * <cbc:ElectronicMail>seller@contact.de);
-			 */
-		} catch (XPathExpressionException | ParseException e) {
-			hasExceptions = true;
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
-		assertFalse(hasExceptions);
-
-		// TransactionCalculator tc = new TransactionCalculator(invoiceCII);
-		// assertEquals(new BigDecimal("205.00"), tc.getGrandTotal());
+	@Test
+	public void testImportIncludedNotes() throws XPathExpressionException, ParseException {
+		InputStream inputStream = this.getClass()
+			.getResourceAsStream("/EN16931_Einfach.pdf");
+		ZUGFeRDInvoiceImporter importer = new ZUGFeRDInvoiceImporter(inputStream);
+		Invoice invoice = importer.extractInvoice();
+		List<IncludedNote> notesWithSubjectCode = invoice.getNotesWithSubjectCode();
+		assertThat(notesWithSubjectCode).hasSize(2);
+		assertThat(notesWithSubjectCode.get(0).getSubjectCode()).isNull();
+		assertThat(notesWithSubjectCode.get(0).getContent()).isEqualTo("Rechnung gemäß Bestellung vom 01.11.2024.");
+		assertThat(notesWithSubjectCode.get(1).getSubjectCode()).isEqualTo(SubjectCode.REG);
+		assertThat(notesWithSubjectCode.get(1).getContent()).isEqualTo("Lieferant GmbH\t\t\t\t\n"
+			+ "Lieferantenstraße 20\t\t\t\t\n"
+			+ "80333 München\t\t\t\t\n"
+			+ "Deutschland\t\t\t\t\n"
+			+ "Geschäftsführer: Hans Muster\n"
+			+ "Handelsregisternummer: H A 123");
 
 	}
 

@@ -5,8 +5,8 @@ package org.mustangproject;
  * including a qualification of these.
  */
 public class IncludedNote {
-  private final String content;
-  private final SubjectCode subjectCode;
+  private String content;
+  private SubjectCode subjectCode;
 
   private static final String INCLUDE_START = "<ram:IncludedNote>";
   private static final String INCLUDE_END = "</ram:IncludedNote>";
@@ -19,6 +19,13 @@ public class IncludedNote {
     this.content = content;
     this.subjectCode = subjectCode;
   }
+
+	/**
+	 * bean constructor
+	 */
+	public  IncludedNote() {
+
+	}
 
   public static IncludedNote generalNote(String content) {
     return new IncludedNote(content, SubjectCode.AAI);

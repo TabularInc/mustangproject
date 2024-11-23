@@ -16,6 +16,14 @@ public class DirectDebit implements IZUGFeRDTradeSettlementDebit {
 	 */
 	protected final String mandate;
 
+	/**
+	 * bean constructor
+	 */
+	public DirectDebit() {
+		this.IBAN = null;
+		this.mandate = null;
+	}
+
 	/***
 	 * constructor for normal use :-)
 	 *

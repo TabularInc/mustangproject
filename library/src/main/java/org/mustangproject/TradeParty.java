@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TradeParty implements IZUGFeRDExportableTradeParty {
 
-	protected String name, zip, street, location, taxScheme;
+	protected String name, zip, street, location, country, taxScheme;
 	protected String taxID = null, vatID = null;
 	protected String ID = null;
 	protected String description = null;
@@ -57,7 +57,7 @@ public class TradeParty implements IZUGFeRDExportableTradeParty {
 		this.street = street;
 		this.zip = zip;
 		this.location = location;
-		this.taxScheme = country;
+		this.country = country;
 
 	}
 
@@ -718,7 +718,7 @@ public class TradeParty implements IZUGFeRDExportableTradeParty {
 
 	@Override
 	public String getCountry() {
-		return taxScheme;
+		return country;
 	}
 
 	/***
@@ -728,7 +728,7 @@ public class TradeParty implements IZUGFeRDExportableTradeParty {
 	 * @return fluent setter
 	 */
 	public TradeParty setCountry(String country) {
-		this.taxScheme = country;
+		this.country = country;
 		return this;
 	}
 

@@ -46,9 +46,9 @@ public class TransactionCalculator implements IAbsoluteValueProvider {
 	 */
 	public BigDecimal getGrandTotal() {
 
-		final BigDecimal res = getTaxBasis();
+		BigDecimal basis = getTaxBasis();
 		return getVATPercentAmountMap().values().stream().map(VATAmount::getCalculated)
-				.map(p -> p.setScale(2, RoundingMode.HALF_UP)).reduce(BigDecimal.ZERO, BigDecimal::add).add(res);
+			.map(p -> p.setScale(2, RoundingMode.HALF_UP)).reduce(BigDecimal.ZERO, BigDecimal::add).add(basis);
 	}
 
 	/***
@@ -95,7 +95,7 @@ public class TransactionCalculator implements IAbsoluteValueProvider {
 		if ((charges != null) && (charges.length > 0)) {
 			for (IZUGFeRDAllowanceCharge currentCharge : charges) {
 				if ((percent == null) || (currentCharge.getTaxPercent().compareTo(percent) == 0)
-						&& currentCharge.getReason() != null) {
+					&& currentCharge.getReason() != null) {
 					res += currentCharge.getReason() + " ";
 				}
 			}
@@ -139,7 +139,7 @@ public class TransactionCalculator implements IAbsoluteValueProvider {
 	 */
 	protected BigDecimal getTotal() {
 		BigDecimal dec = Stream.of(trans.getZFItems()).map(LineCalculator::new)
-				.map(LineCalculator::getItemTotalNetAmount).reduce(ZERO, BigDecimal::add);
+			.map(LineCalculator::getItemTotalNetAmount).reduce(ZERO, BigDecimal::add);
 		return dec;
 	}
 
@@ -151,8 +151,8 @@ public class TransactionCalculator implements IAbsoluteValueProvider {
 	 */
 	protected BigDecimal getTaxBasis() {
 		return getTotal().add(getChargesForPercent(null).setScale(2, RoundingMode.HALF_UP))
-				.subtract(getAllowancesForPercent(null).setScale(2, RoundingMode.HALF_UP))
-				.setScale(2, RoundingMode.HALF_UP);
+			.subtract(getAllowancesForPercent(null).setScale(2, RoundingMode.HALF_UP))
+			.setScale(2, RoundingMode.HALF_UP);
 	}
 
 	/**
@@ -171,7 +171,7 @@ public class TransactionCalculator implements IAbsoluteValueProvider {
 			if (percent != null) {
 				LineCalculator lc = new LineCalculator(currentItem);
 				VATAmount itemVATAmount = new VATAmount(lc.getItemTotalNetAmount(), lc.getItemTotalVATAmount(),
-						currentItem.getProduct().getTaxCategoryCode(), vatDueDateTypeCode);
+					currentItem.getProduct().getTaxCategoryCode(), vatDueDateTypeCode);
 				String reasonText = currentItem.getProduct().getTaxExemptionReason();
 				if (reasonText != null) {
 					itemVATAmount.setVatExemptionReasonText(reasonText);
@@ -193,8 +193,8 @@ public class TransactionCalculator implements IAbsoluteValueProvider {
 					VATAmount theAmount = hm.get(taxPercent.stripTrailingZeros());
 					if (theAmount == null) {
 						theAmount = new VATAmount(BigDecimal.ZERO, BigDecimal.ZERO,
-								currentCharge.getCategoryCode() != null ? currentCharge.getCategoryCode() : "S",
-								vatDueDateTypeCode);
+							currentCharge.getCategoryCode() != null ? currentCharge.getCategoryCode() : "S",
+							vatDueDateTypeCode);
 					}
 					theAmount.setBasis(theAmount.getBasis().add(currentCharge.getTotalAmount(this)));
 					BigDecimal factor = taxPercent.divide(new BigDecimal(100));
@@ -211,8 +211,8 @@ public class TransactionCalculator implements IAbsoluteValueProvider {
 					VATAmount theAmount = hm.get(taxPercent.stripTrailingZeros());
 					if (theAmount == null) {
 						theAmount = new VATAmount(BigDecimal.ZERO, BigDecimal.ZERO,
-								currentAllowance.getCategoryCode() != null ? currentAllowance.getCategoryCode() : "S",
-								vatDueDateTypeCode);
+							currentAllowance.getCategoryCode() != null ? currentAllowance.getCategoryCode() : "S",
+							vatDueDateTypeCode);
 					}
 					theAmount.setBasis(theAmount.getBasis().subtract(currentAllowance.getTotalAmount(this)));
 					BigDecimal factor = taxPercent.divide(new BigDecimal(100));
@@ -239,4 +239,11 @@ public class TransactionCalculator implements IAbsoluteValueProvider {
 		return getAllowancesForPercent(null).setScale(2, RoundingMode.HALF_UP);
 	}
 
+	public BigDecimal getDuePayable() {
+		BigDecimal res = getGrandTotal().subtract(getTotalPrepaid());
+		if (trans.getRoundingAmount() != null) {
+			res = res.add(trans.getRoundingAmount());
+		}
+		return res;
+	}
 }

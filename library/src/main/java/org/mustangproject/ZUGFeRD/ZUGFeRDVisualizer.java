@@ -273,6 +273,12 @@ public class ZUGFeRDVisualizer {
 		EStandard theStandard = findOutStandardFromRootNode(fis);
 		fis = new FileInputStream(xmlFilename);// rewind :-(
 
+		return toFOP(fis, theStandard);
+	}
+
+	protected String toFOP(InputStream is, EStandard theStandard)
+		throws FileNotFoundException, TransformerException {
+
 		try {
 			if (mXsltPDFTemplate == null) {
 				mXsltPDFTemplate = mFactory.newTemplates(
@@ -286,13 +292,13 @@ public class ZUGFeRDVisualizer {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 		if (theStandard == EStandard.zugferd) {
-			applyZF1XSLT(fis, iaos);
+			applyZF1XSLT(is, iaos);
 		} else if (theStandard == EStandard.facturx) {
-			applyZF2XSLT(fis, iaos);
+			applyZF2XSLT(is, iaos);
 		} else if (theStandard == EStandard.ubl) {
-			applyUBL2XSLT(fis, iaos);
+			applyUBL2XSLT(is, iaos);
 		} else if (theStandard == EStandard.ubl_creditnote) {
-			applyUBLCreditNote2XSLT(fis, iaos);
+			applyUBLCreditNote2XSLT(is, iaos);
 		}
 
 		PipedInputStream in = new PipedInputStream();
