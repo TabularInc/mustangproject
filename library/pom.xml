@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>org.mustangproject</groupId>
+        <groupId>org.tabular.mustangproject</groupId>
         <artifactId>core</artifactId>
         <version>2.15.0-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mustangproject</groupId>
+    <groupId>org.tabular.mustangproject</groupId>
     <artifactId>library</artifactId>
     <version>2.15.0-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -23,23 +23,22 @@
         <tag>core-2.3.2</tag>
     </scm>
     <repositories>
-        <repository><!-- for jargs -->
-            <id>sonatype-oss-public</id>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/TabularInc/*</url>
         </repository>
     </repositories>
     <distributionManagement>
         <repository>
-            <id>internal.repo</id>
-            <name>Temporary Staging Repository</name>
-            <url>file://${project.build.directory}/mvn-repo</url>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/TabularInc/mustangproject</url>
         </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/TabularInc/mustangproject</url>
+        </snapshotRepository>
     </distributionManagement>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -49,9 +48,7 @@
         <maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <maven.deploy.skip>true
-        </maven.deploy.skip><!-- do deploy to maven central, parent project does not and inherits -->
-
+        <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
     <dependencies>
         <dependency>

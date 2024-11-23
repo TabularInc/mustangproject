@@ -17,7 +17,7 @@ You may already start developing what you wanted. Of course you can use any edit
 2. fork
 
 Once you can build, the idea is that you contribute patches via pull requests. For this you need a GitHub account and  a personal copy of the repository to store your changes in. Just click fork on the mustangproject. On your copy you will have git write access. My suggestion as git client is sourcetree.
-There is a documentation [how to create pull requests from forks to the original repo](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).  
+There is a documentation [how to create pull requests from forks to the original repo](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 
 3. branch
 
@@ -34,18 +34,18 @@ If e.g. new elements or attributes are added, they are often added
 * in the object so that a developer can use them
 * in the interface so that a old fashioned developer could use them as well
 * in the pullprovider so that it actually finds it's way into the XML
-* in at least one test (the ...edgeTest are supposed to handle edge cases, ~all bells and whistles, maybe it fits there), after the test has been run this should at least once be 
-* validated. If that works one can start implementing the 
+* in at least one test (the ...edgeTest are supposed to handle edge cases, ~all bells and whistles, maybe it fits there), after the test has been run this should at least once be
+* validated. If that works one can start implementing the
 * reading part (along with tests), then it needs to be
-* documented e.g. on the homepage and 
+* documented e.g. on the homepage and
 * communicated, at the very least by mentioning it in the history.md
 
 ## Architecture
 
-Mustang contains a library to read/write e-invoices, 
-a validator library  
-(and can also read/write e-invoices, but is substantially 
-larger) and a commandline application using the latter 
+Mustang contains a library to read/write e-invoices,
+a validator library
+(and can also read/write e-invoices, but is substantially
+larger) and a commandline application using the latter
 library.
 
 ![Architecture of mustangproject](Mustang-Architecture.svg "Graph of the architecture of Mustangproject")
@@ -83,21 +83,21 @@ can be used as debug configuration goal in Eclipse. In that case you can set bre
 
 ## Deployment
 
-A section in Maven's settings.xml is needed, in Linux (and MacOS) that's at ~/.m2/settings.xml 
+A section in Maven's settings.xml is needed, in Linux (and MacOS) that's at ~/.m2/settings.xml
 
 As „servers“, enter the following
 ```xml
-   <servers> 
-    <server> 
-      <id>github</id> 
-      <password>GITHUB-TOKEN</password> 
-    </server> 
-    <server> 
-      <id>ossrh</id> 
-      <username>jstaerk</username> 
-      <password>JIRA-PASSWORD</password> 
-    </server> 
-   </servers> 
+   <servers>
+    <server>
+      <id>github</id>
+      <password>GITHUB-TOKEN</password>
+    </server>
+    <server>
+      <id>ossrh</id>
+      <username>jstaerk</username>
+      <password>JIRA-PASSWORD</password>
+    </server>
+   </servers>
 ```
 Add a profiles section to settings.xml
 ```
@@ -126,11 +126,11 @@ The whole settings.xml then looks e.g. like this
       <offline/>
       <pluginGroups/>
       <servers>
-    <server> 
-      <id>ossrh</id> 
-      <username>SONATYPE TOKEN USER</username> 
-      <password>SONATYPE TOKEN PASSWORD</password> 
-    </server> 
+    <server>
+      <id>ossrh</id>
+      <username>SONATYPE TOKEN USER</username>
+      <password>SONATYPE TOKEN PASSWORD</password>
+    </server>
 
       </servers>
       <mirrors/>
@@ -155,9 +155,9 @@ Deployment to maven central is described e.g. on [dzone](https://dzone.com/artic
 See the following screenshot:
 Sign in in GitHub and click on the profile picture -> Settings. Now just generate a new token and set the checkboxes from the screenshot.
 ![screenshot](development_documentation_screenshot_github_settings.png "Screenshot Github Settings")
- The Token-ID is the password. 
+ The Token-ID is the password.
 
-In .m2 also need a toolchains.xml which defines a JDK 1.11 target like the following: 
+In .m2 also need a toolchains.xml which defines a JDK 1.11 target like the following:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <toolchains>
@@ -172,7 +172,7 @@ In .m2 also need a toolchains.xml which defines a JDK 1.11 target like the follo
             <jdkHome>C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot</jdkHome>
         </configuration>
     </toolchain>
- 
+
 </toolchains>
 ```
 
@@ -184,7 +184,7 @@ maybe not yet even existing new release version:
 
 ```
 cd validator/target
-mvn install:install-file -Dfile=validator-2.12.0-SNAPSHOT-shaded.jar -Dclassifier=shaded -DgroupId=org.mustangproject -DartifactId=validator -Dversion=2.12.0 -Dpackaging=jar -DgeneratePom=true
+mvn install:install-file -Dfile=validator-2.12.0-SNAPSHOT-shaded.jar -Dclassifier=shaded -DgroupId=org.tabular.mustangproject -DartifactId=validator -Dversion=2.12.0 -Dpackaging=jar -DgeneratePom=true
 ```
 In gradle you can use something like
 ```
@@ -194,20 +194,20 @@ implementation files('libs/validator-2.12.0-shaded.jar')
 
 ## Release
 
-You will need a git client on the console, if that's available can e.g. be checked with "git --version" . 
+You will need a git client on the console, if that's available can e.g. be checked with "git --version" .
 Change to the root of the repo.
 
-Change to the project directory and run 
+Change to the project directory and run
   * `mvn clean install` confirm javadoc is OK with
-  * `mvn javadoc:javadoc`. If that works you can 
+  * `mvn javadoc:javadoc`. If that works you can
   * clean the release with `mvn release:clean` and prepare the release with
-  * `mvn release:prepare` and enter the version numbers. 
-  * After that is through you can create a new release via `mvn release:perform`.This will also update the maven repo. 
-  
-  ![screenshot](development_documentation_screenshot_release.png "Screenshot Release")
-  
+  * `mvn release:prepare` and enter the version numbers.
+  * After that is through you can create a new release via `mvn release:perform`.This will also update the maven repo.
 
-Afterwards you can access the release page and update the documentation, e.g. upload the jar, the jar javadoc and ZugferdDev. You can also enter a changelog and a better title. 
+  ![screenshot](development_documentation_screenshot_release.png "Screenshot Release")
+
+
+Afterwards you can access the release page and update the documentation, e.g. upload the jar, the jar javadoc and ZugferdDev. You can also enter a changelog and a better title.
 
 ## Regular updates
 
@@ -228,7 +228,7 @@ extract, rename xsl file to xslt, move to new version dir and add a if where the
   * email the mailing list
   * freshcode.club
   * Submit on openpr.de/.com, https://www.einpresswire.com/
- 
+
 ## Tips&amp;Inspriration
 
 
@@ -246,7 +246,7 @@ NodeList from a XPath https://github.com/ZUGFeRD/mustangproject/pull/476/files
 		});
 ```
 
-nodeMap.getAsNodeMap and nodeMap.getAsString 
+nodeMap.getAsNodeMap and nodeMap.getAsString
 ```
 
 		nodeMap.getAsString("SellerAssignedID").ifPresent(this::setSellerAssignedID);

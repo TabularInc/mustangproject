@@ -6,13 +6,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.mustangproject.ZUGFeRD.IExportableTransaction;
-import org.mustangproject.ZUGFeRD.IZUGFeRDAllowanceCharge;
-import org.mustangproject.ZUGFeRD.IZUGFeRDExportableItem;
-import org.mustangproject.ZUGFeRD.IZUGFeRDExportableProduct;
-import org.mustangproject.ZUGFeRD.IZUGFeRDExportableTradeParty;
-import org.mustangproject.ZUGFeRD.IZUGFeRDExporter;
-import org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1;
+import org.tabular.mustangproject.ZUGFeRD.IExportableTransaction;
+import org.tabular.mustangproject.ZUGFeRD.IZUGFeRDAllowanceCharge;
+import org.tabular.mustangproject.ZUGFeRD.IZUGFeRDExportableItem;
+import org.tabular.mustangproject.ZUGFeRD.IZUGFeRDExportableProduct;
+import org.tabular.mustangproject.ZUGFeRD.IZUGFeRDExportableTradeParty;
+import org.tabular.mustangproject.ZUGFeRD.IZUGFeRDExporter;
+import org.tabular.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1;
 
 class Contact implements IZUGFeRDExportableTradeParty {
 

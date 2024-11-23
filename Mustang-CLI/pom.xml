@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>org.mustangproject</groupId>
+        <groupId>org.tabular.mustangproject</groupId>
         <artifactId>core</artifactId>
         <version>2.15.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mustangproject</groupId>
+    <groupId>org.tabular.mustangproject</groupId>
     <artifactId>Mustang-CLI</artifactId>
     <name>e-invoices commandline tool, allowing to create(embed), split and validate Factur-X/ZUGFeRD files. Validation
         should also work for XRechnung/CII.
@@ -15,17 +15,18 @@
     <version>2.15.0-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.deploy.skip>true</maven.deploy.skip>
         <maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.mustangproject</groupId>
+            <groupId>org.tabular.mustangproject</groupId>
             <artifactId>validator</artifactId>
             <version>2.15.0-SNAPSHOT</version>
             <!-- prototypes of new mustangproject versions can be installed by referring to them and installed to the local repo from a jar file with
-           mvn install:install-file -Dfile=mustang-1.5.4-SNAPSHOT.jar -DgroupId=org.mustangproject.ZUGFeRD -DartifactId=mustang -Dversion=1.5.4 -Dpackaging=jar -DgeneratePom=true
+           mvn install:install-file -Dfile=mustang-1.5.4-SNAPSHOT.jar -DgroupId=org.tabular.mustangproject.ZUGFeRD -DartifactId=mustang -Dversion=1.5.4 -Dpackaging=jar -DgeneratePom=true
            -->
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
@@ -138,7 +139,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>org.mustangproject.commandline.main</mainClass>
+                            <mainClass>org.tabular.mustangproject.commandline.main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -158,7 +159,7 @@
                 <configuration>
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>org.mustangproject.commandline.Main</mainClass>
+                            <mainClass>org.tabular.mustangproject.commandline.Main</mainClass>
                         </transformer>
                     </transformers>
                     <minimizeJar>false</minimizeJar>

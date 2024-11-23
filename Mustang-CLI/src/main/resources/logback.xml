@@ -10,7 +10,7 @@
     <if condition='property("FILE_APPENDER_ENABLED").contains("true")'>
         <then>
             <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender" >
-                <!--<appender name="FILE" class="org.mustangproject.commandline.LazyRollingFileAppender" >-->
+                <!--<appender name="FILE" class="org.tabular.mustangproject.commandline.LazyRollingFileAppender" >-->
                 <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
                     <!-- Daily rollover -->
                     <fileNamePattern>log/ZUV-%d{yyyy-MM}.log</fileNamePattern>
@@ -35,4 +35,4 @@
         </if>
         <appender-ref ref="STDERR" />
     </root>
-</configuration>   
+</configuration>
