@@ -184,7 +184,7 @@ maybe not yet even existing new release version:
 
 ```
 cd validator/target
-mvn install:install-file -Dfile=validator-2.12.0-SNAPSHOT-shaded.jar -Dclassifier=shaded -DgroupId=org.tabular.mustangproject -DartifactId=validator -Dversion=2.12.0 -Dpackaging=jar -DgeneratePom=true
+mvn install:install-file -Dfile=validator-2.12.0-SNAPSHOT-shaded.jar -Dclassifier=shaded -DgroupId=org.mustangproject -DartifactId=validator -Dversion=2.12.0 -Dpackaging=jar -DgeneratePom=true
 ```
 In gradle you can use something like
 ```

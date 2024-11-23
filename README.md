@@ -32,7 +32,7 @@ If you set up a Maven project, you can reference the mustang artifact like this:
 
 ```xml
 <dependency>
-  <groupId>org.tabular.mustangproject</groupId>
+  <groupId>org.mustangproject</groupId>
   <artifactId>library</artifactId>
  <version>2.14.0</version>
 </dependency>

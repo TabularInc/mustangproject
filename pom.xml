@@ -55,7 +55,7 @@
                 <version>3.0.1</version>
                 <configuration>
 
-                    <excludePackageNames>org.tabular.mustangproject.ZUGFeRD.model.*</excludePackageNames>
+                    <excludePackageNames>org.mustangproject.ZUGFeRD.model.*</excludePackageNames>
 
                 </configuration>
             </plugin>

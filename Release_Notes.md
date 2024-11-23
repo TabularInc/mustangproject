@@ -39,7 +39,7 @@ We're now on maven central, please remove the old github repository. Additionall
 
 | What  | old value | new value          |
 |---|---|--------------------|
-| Group id  | org.tabular.mustangproject.zugferd | org.tabular.mustangproject |
+| Group id  | org.mustangproject.zugferd | org.mustangproject |
 | Artifact ID | mustang | library            |
 | Version | 1.7.8 | 2.14.0      |
 
@@ -126,7 +126,7 @@ From maven central fetch
 
 <dependencies>
     <dependency>
-       <groupId>org.tabular.mustangproject</groupId>
+       <groupId>org.mustangproject</groupId>
        <artifactId>library</artifactId>
        <version>2.0.0-alpha3</version>
     </dependency>
@@ -134,13 +134,13 @@ From maven central fetch
 
 ```
 ```
-import org.tabular.mustangproject.Contact;
-import org.tabular.mustangproject.Invoice;
-import org.tabular.mustangproject.Item;
-import org.tabular.mustangproject.Product;
-import org.tabular.mustangproject.ZUGFeRD.IZUGFeRDExporter;
-import org.tabular.mustangproject.ZUGFeRD.Profiles;
-import org.tabular.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1;
+import org.mustangproject.Contact;
+import org.mustangproject.Invoice;
+import org.mustangproject.Item;
+import org.mustangproject.Product;
+import org.mustangproject.ZUGFeRD.IZUGFeRDExporter;
+import org.mustangproject.ZUGFeRD.Profiles;
+import org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -199,7 +199,7 @@ read/write ZUGFeRD-invoices like the (smaller) library module.
 ```
 <dependencies>
    <dependency>
-      <groupId>org.tabular.mustangproject</groupId>
+      <groupId>org.mustangproject</groupId>
       <artifactId>validator</artifactId>
       <version>2.14.0</version>
    </dependency>
@@ -207,7 +207,7 @@ read/write ZUGFeRD-invoices like the (smaller) library module.
 
 ```
 ```
-import org.tabular.mustangproject.validator.ZUGFeRDValidator;
+import org.mustangproject.validator.ZUGFeRDValidator;
 public class Main {
     public static void main(String[] args) {
         ZUGFeRDValidator zfv = new ZUGFeRDValidator();
